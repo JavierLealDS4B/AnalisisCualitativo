@@ -1,9 +1,16 @@
 ---
-title: "Análisis de Sentimientos en Investigación: Praxis Universitaria y Particpación Ciudadana"
+title: 'Análisis de Sentimientos en Investigación: Práxis Universitaria y Particpación
+  Ciudadana'
 author: "Dr. José J. Leal"
 date: "1 de septiembre de 2021"
-output: html_document
+output:
+  html_document:
+    df_print: paged
+lang: es-ES
+toc: yes
 ---
+
+\pagebreak
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -29,7 +36,7 @@ library(syuzhet)
 library(pdftools)
 ```
 
-## 3.Cargar el diccionario y la función get_sentiments.R
+## 2. Cargar el diccionario y la función get_sentiments.R
 ```{r,message=FALSE,warning=FALSE}
 sentimientos <- read_tsv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/sentimientos_2.txt",
                          col_types = "cccn",
@@ -39,7 +46,7 @@ source("https://raw.githubusercontent.com/7PartidasDigital/R-LINHD-18/master/get
 #Fuente: Fradejas Rueda, José Manuel (2018). Análisis de textos y estilometría con R, (AnaText), https://github.com/7PartidasDigital/AnaText
 ```
 
-## 4. Carga y verificación del Protocolo
+## 3. Carga y verificación del Protocolo
 ```{r,message=FALSE,warning=FALSE}
 # Lectura del archivo de Protocolo
 
@@ -49,8 +56,7 @@ length(protocolo)
 #head(protocolo) Para ver las 6 primeras observaciones o parrafos 
 ```
 
-## 5. Convertirlo en una tibble para poder dividirlo en palabras-token y
-#hacer los primeros cálculos.
+## 4. Convertirlo en una tibble para poder dividirlo en palabras-token y hacer los primeros cálculos.
 ```{r}
 protocolo_analizar <- tibble(texto = protocolo)
 protocolo_analizar <- protocolo_analizar %>%
@@ -64,14 +70,14 @@ protocolo_analizar <- protocolo_analizar %>%
 protocolo_analizar #Ver el resultado
 ```
 
-## 6.Sumar a los valores de la variable "positivo" los de la "negativo"
+## 5. Sumar a los valores de la variable "positivo" los de la "negativo"
 ```{r,message=FALSE,warning=FALSE}
 puntuacion <- protocolo_analizar %>%
   mutate(sentimiento = positivo+negativo) %>%
   select(pagina, sentimiento)
 ```
 
-## 7.Graficar los resultados de la Cualificación del Sentimiento por página 
+## 6. Graficar los resultados de la Cualificación del Sentimiento por página 
 ```{r,message=FALSE,warning=FALSE}
 ggplot(data = puntuacion, aes(x = pagina, y = sentimiento)) +
   geom_bar(stat = "identity", color = "pink", fill = "aquamarine3") +
@@ -84,9 +90,9 @@ ggplot(data = puntuacion, aes(x = pagina, y = sentimiento)) +
 ```
 
 
-##8.Captar la curva de la línea por la que transita la narración
-#aqui syuzhet, utiliza la función get_dct_transform()
+## 7. Captar la curva de la línea por la que transita la narración
 ```{r,message=FALSE,warning=FALSE}
+#Aqui syuzhet, utiliza la función get_dct_transform()
 protocolo_trans <- get_dct_transform(puntuacion$sentimiento,
                                  low_pass_size = 10,
                                  #x_reverse_len = nrow(puntuacion),
@@ -101,7 +107,7 @@ protocolo_trans <- tibble(pagina = seq_along(protocolo_trans),
 protocolo_trans #Ver el resultado 
 ```
 
-## 9.Graficar el resultado anterior como "Forma de la historia"
+## 8. Graficar el resultado anterior como "Forma de la historia"
 ```{r,message=FALSE,warning=FALSE}
 ggplot(protocolo_trans, aes(x = pagina, y = ft)) +
   geom_bar(stat = "identity", alpha = 0.8,
@@ -113,7 +119,7 @@ ggplot(protocolo_trans, aes(x = pagina, y = ft)) +
                            italic("Protocolos Anécdoticos Globales"))))
 ```
 
-## 10.Obtener una gráfica sencilla de líneas con los mismos datos
+## 9. Obtener una gráfica sencilla de líneas con los mismos datos
 ```{r,message=FALSE,warning=FALSE}
 plot(protocolo_trans,
      type = "l",
