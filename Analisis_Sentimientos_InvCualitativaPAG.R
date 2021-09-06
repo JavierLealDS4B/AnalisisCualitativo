@@ -1,65 +1,53 @@
----
-title: 'Análisis de Sentimientos en Investigación: Práxis Universitaria y Particpación
-  Ciudadana'
-author: "Dr. José J. Leal"
-date: "1 de septiembre de 2021"
-output:
-  html_document:
-    df_print: paged
-  pdf_document: default
-lang: es-ES
-toc: yes
----
 
-\pagebreak
+#Prueba Análisisi de Sentimientos en Protocolos Unificados usando "syuzhet"
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+# Limpiar el workspace, consola y fijar a UTF-8
 
-
-##Análisis de Sentimientos en Protocolos Anécdoticos usando "syuzhet"
-
-Limpiar el workspace, consola y fijar a UTF-8
-```{r,message=FALSE,warning=FALSE}
 rm(list = ls())
-cat("\014")
-options(encoding = "utf-8")
-```
 
-## 1. Instalar y Cargar Librerias
-```{r,message=FALSE,warning=FALSE}
+cat("\014")
+
+options(encoding = "utf-8")
+
+# 1. Instalar y Cargar Librerias
+
 # install.packages("syuzhet") - de no tenerlo
 
 library(tidyverse)
 library(tidytext)
 library(syuzhet)
 library(pdftools)
-```
 
-## 2. Cargar el diccionario y la función get_sentiments.R
-```{r,message=FALSE,warning=FALSE}
+# 3. cargar el diccionario y la función get_sentiments.R
+
 sentimientos <- read_tsv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/sentimientos_2.txt",
                          col_types = "cccn",
                          locale = default_locale())
 source("https://raw.githubusercontent.com/7PartidasDigital/R-LINHD-18/master/get_sentiments.R")
 
-#Fuente: Fradejas Rueda, José Manuel (2018). Análisis de textos y estilometría con R, (AnaText), https://github.com/7PartidasDigital/AnaText
-```
+# 4. Carga del Protocolo
 
-## 3. Carga y verificación del Protocolo
-```{r,message=FALSE,warning=FALSE}
+# Ubicar directorio de trabajo
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+
 # Lectura del archivo de Protocolo
 
 protocolo <- pdftools::pdf_text("ProtocoloTotal.pdf")
-protocolo[1] #Primea observación o parrafo
-length(protocolo)
-#head(protocolo) Para ver las 6 primeras observaciones o parrafos 
-```
 
-## 4. Convertirlo en una tibble para poder dividirlo en palabras-token y hacer los primeros cálculos.
-```{r}
+protocolo[1]
+
+length(protocolo)
+
+head(protocolo)
+
+
+# 5. Convertirlo en una tibble para poder dividirlo en palabras-token y
+#hacer los primeros cálculos.
+
 protocolo_analizar <- tibble(texto = protocolo)
+
 protocolo_analizar <- protocolo_analizar %>%
   unnest_tokens(palabra, texto) %>% #Dividir en palabras Tokens "palabra"
   mutate(pagina = (1:n()) %/% 400 + 1) %>% #Crea un índice, equivalente a 400 palabras/página
@@ -69,17 +57,16 @@ protocolo_analizar <- protocolo_analizar %>%
   mutate(negativo = negativo*-1) #Transformar números de columna negativo en números negativos
 
 protocolo_analizar #Ver el resultado
-```
 
-## 5. Sumar a los valores de la variable "positivo" los de la "negativo"
-```{r,message=FALSE,warning=FALSE}
+
+# 6.Sumar a los valores de la variable positivo a los de negativo
+
 puntuacion <- protocolo_analizar %>%
   mutate(sentimiento = positivo+negativo) %>%
   select(pagina, sentimiento)
-```
 
-## 6. Graficar los resultados de la Cualificación del Sentimiento por página 
-```{r,message=FALSE,warning=FALSE}
+# 7. Graficar los resultados
+
 ggplot(data = puntuacion, aes(x = pagina, y = sentimiento)) +
   geom_bar(stat = "identity", color = "pink1", fill = "aquamarine3") +
   theme_minimal() +
@@ -88,12 +75,11 @@ ggplot(data = puntuacion, aes(x = pagina, y = sentimiento)) +
   ggtitle(expression(paste("Sentimiento en ",
                            italic("Protocolos Anécdoticos Unificados UNESR-UPTT")))) +
   theme(legend.justification=c(0.91,0), legend.position=c(1, 0))
-```
 
 
-## 7. Captar la curva de la línea por la que transita la narración
-```{r,message=FALSE,warning=FALSE}
-#Aqui syuzhet, utiliza la función get_dct_transform()
+#8. Visualizar con nitidez la curva de la línea por la que transita la narración
+#aqui syuzhet, utiliza la función get_dct_transform()
+
 protocolo_trans <- get_dct_transform(puntuacion$sentimiento,
                                  low_pass_size = 10,
                                  #x_reverse_len = nrow(puntuacion),
@@ -106,10 +92,9 @@ protocolo_trans <- tibble(pagina = seq_along(protocolo_trans),
                       ft = protocolo_trans)
 
 protocolo_trans #Ver el resultado 
-```
 
-## 8. Graficar el resultado anterior como "Forma de la historia"
-```{r,message=FALSE,warning=FALSE}
+
+# 9. Graficar el resultado anterior "Forma de la historia"
 windows ()
 c4 = c("UNESR"=rep("aquamarine3", times = 47) , "UPTT"=rep("pink3", times = 53))
 df = cbind(df, c4)
@@ -121,10 +106,9 @@ ggplot(protocolo_trans, aes(x = pagina, y = ft)) +
        y = "Transformación Valorada del Sentimiento") +
     ggtitle(expression(paste("Forma de la historia: ",
                            italic("Protocolos Anécdoticos Unificados UNESR-UPTT"))))
-```
 
-## 9. Obtener una gráfica sencilla de líneas con los mismos datos
-```{r,message=FALSE,warning=FALSE}
+
+# Obtener una gráfica sencilla de líneas con los mismos datos
 windows()
 plot(protocolo_trans,
      type = "l",
@@ -133,6 +117,3 @@ plot(protocolo_trans,
      xlab = "Tiempo narrativo",
      main = "La forma de la historia:\nProtocolos Anécdoticos Unificados")
 abline(h = 0.0, col = "red")
-```
-
-
